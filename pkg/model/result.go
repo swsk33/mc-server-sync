@@ -11,9 +11,8 @@ type Result[T any] struct {
 }
 
 // CreateNullSuccessResult 创建不包含数据的成功结果
-func CreateNullSuccessResult[T any](message string) *Result[T] {
-	var zero T
-	return &Result[T]{true, message, zero}
+func CreateNullSuccessResult(message string) *Result[any] {
+	return &Result[any]{true, message, nil}
 }
 
 // CreateSuccessResult 创建成功结果
@@ -22,7 +21,6 @@ func CreateSuccessResult[T any](message string, data T) *Result[T] {
 }
 
 // CreateFailedResult 创建失败结果
-func CreateFailedResult[T any](message string) *Result[T] {
-	var zero T
-	return &Result[T]{false, message, zero}
+func CreateFailedResult(message string) *Result[any] {
+	return &Result[any]{false, message, nil}
 }
