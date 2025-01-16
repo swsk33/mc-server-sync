@@ -25,27 +25,41 @@ type ServerConfig struct {
 type ClientConfig struct {
 	BaseConfig
 	// 连接同步服务器配置
-	SyncServer struct {
+	Server struct {
 		// 服务器地址
 		Host string `mapstructure:"host"`
 		// 服务器端口
 		Port int `mapstructure:"port" default:"25566"`
-	} `mapstructure:"sync-server"`
-	// 下载相关配置
-	Download struct {
+	} `mapstructure:"server"`
+	// 文件同步相关配置
+	Sync struct {
 		// 同时下载的文件数
-		Concurrency int `mapstructure:"concurrency" default:"3"`
-	} `mapstructure:"download"`
-	// 忽略同步的模组文件名列表
-	IgnoreFileNames []string `mapstructure:"ignore-file-names"`
+		FetchConcurrency int `mapstructure:"fetch-concurrency" default:"3"`
+		// 软删除
+		// 若开启软删除，则在同步时删除本地模组文件时，不会实际对文件进行删除，而是移动到程序所在目录的mod-backup文件夹
+		SoftRemove bool `mapstructure:"soft-remove" default:"true"`
+		// 忽略同步的模组文件名列表
+		IgnoreFileNames []string `mapstructure:"ignore-file-names"`
+	} `mapstructure:"sync"`
 }
 
 // SetDefaultValue 根据对象的default标签设定字段默认值
 func SetDefaultValue(object any) {
 	// 获取该对象的反射对象
 	value := reflect.ValueOf(object)
+	// 如果传入的是指针，获取指针指向的值
+	if value.Kind() == reflect.Ptr {
+		value = value.Elem()
+	} else {
+		// 如果传入的是值类型，强制转换为指针类型
+		value = reflect.New(value.Type()).Elem()
+	}
 	// 获取该对象类型
 	objectType := reflect.TypeOf(object)
+	// 如果对象本身是指针类型，获取指针指向的类型
+	if objectType.Kind() == reflect.Ptr {
+		objectType = objectType.Elem()
+	}
 	// 获取属性个数
 	fieldNum := value.NumField()
 	// 遍历每个属性信息
@@ -54,7 +68,7 @@ func SetDefaultValue(object any) {
 		fieldValue := value.Field(i)
 		// 结构体类型则递归
 		if fieldType.Type.Kind() == reflect.Struct {
-			SetDefaultValue(fieldValue.Interface())
+			SetDefaultValue(fieldValue.Addr().Interface())
 		} else if fieldValue.IsZero() {
 			// 字段为空则赋值默认值
 			tagValue := fieldType.Tag.Get("default")
@@ -66,17 +80,27 @@ func SetDefaultValue(object any) {
 					if intValue, e := strconv.Atoi(tagValue); e == nil {
 						fieldValue.SetInt(int64(intValue))
 					}
+				case reflect.Bool:
+					if boolValue, e := strconv.ParseBool(tagValue); e == nil {
+						fieldValue.SetBool(boolValue)
+					}
 				default:
 					panic("不支持的类型")
 				}
 			}
 		}
 	}
+	// 如果原始传入对象是值类型，需要将修改的值写回去
+	if reflect.ValueOf(object).Kind() != reflect.Ptr {
+		reflect.ValueOf(object).Elem().Set(value)
+	}
 }
 
 // PrintConfig 输出配置信息到控制台
-func PrintConfig(config any) {
-	fmt.Println("配置信息如下：")
+//
+//   - config 打印的配置对象
+//   - prefix 递归前缀
+func PrintConfig(config any, prefix string) {
 	// 获取该对象的反射对象
 	value := reflect.ValueOf(config)
 	// 获取该对象类型
@@ -85,8 +109,38 @@ func PrintConfig(config any) {
 	fieldNum := value.NumField()
 	// 遍历每个属性信息
 	for i := 0; i < fieldNum; i++ {
-		configName := objectType.Field(i).Tag.Get("mapstructure")
-		configValue := value.Field(i).Interface()
-		fmt.Printf("%s = %s\n", configName, configValue)
+		// 获取字段的反射类型
+		field := objectType.Field(i)
+		// 获取字段值
+		fieldValue := value.Field(i)
+		// 判断是否是匿名字段
+		var configName string
+		if field.Anonymous {
+			// 对于匿名字段，递归输出
+			PrintConfig(fieldValue.Interface(), prefix)
+			continue
+		} else {
+			// 如果字段有 `mapstructure` 标签，则使用标签的值作为配置项名称
+			configName = field.Tag.Get("mapstructure")
+			if configName == "" {
+				// 如果没有 `mapstructure` 标签，则使用字段的名称
+				configName = field.Name
+			}
+		}
+		// 如果是结构体类型则递归
+		if fieldValue.Kind() == reflect.Struct {
+			if prefix == "" {
+				PrintConfig(fieldValue.Interface(), configName)
+			} else {
+				PrintConfig(fieldValue.Interface(), fmt.Sprintf("%s.%s", prefix, configName))
+			}
+		} else {
+			// 打印字段值
+			if prefix == "" {
+				fmt.Printf("%s = %v\n", configName, fieldValue.Interface())
+			} else {
+				fmt.Printf("%s = %v\n", fmt.Sprintf("%s.%s", prefix, configName), fieldValue.Interface())
+			}
+		}
 	}
 }

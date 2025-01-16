@@ -5,3 +5,7 @@
 # 编译产物
 *.exe
 target/
+
+# 自定义
+# 测试的运行路径
+test-run-path/

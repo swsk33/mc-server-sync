@@ -1,0 +1,14 @@
+# 客户端模组文件夹
+mod-folder: ".minecraft/mods"
+# 同步服务器连接配置
+server:
+  host: "127.0.0.1"
+  port: 25566
+# 文件同步相关配置
+sync:
+  # 同步时同时下载的模组数量
+  fetch-concurrency: 2
+  # 软删除
+  soft-remove: true
+  ignore-file-names:
+    - "example-mod.jar"

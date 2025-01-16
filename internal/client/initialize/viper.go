@@ -2,7 +2,7 @@ package initialize
 
 import (
 	"fmt"
-	"gitee.com/swsk33/mc-server-sync/internal/server/global"
+	"gitee.com/swsk33/mc-server-sync/internal/client/global"
 	"gitee.com/swsk33/mc-server-sync/pkg/model"
 	"gitee.com/swsk33/sclog"
 	"github.com/spf13/viper"
@@ -10,16 +10,16 @@ import (
 	"path/filepath"
 )
 
-// InitServerConfig 初始化Viper及其配置对象
-func InitServerConfig() error {
+// InitClientConfig 初始化Viper及其配置对象
+func InitClientConfig() error {
 	// 从命令行参数获取配置文件路径
-	// 如果未传递，则默认搜索当前路径下和可执行文件所在目录下的server-config.yaml文件
+	// 如果未传递，则默认搜索当前路径下和可执行文件所在目录下的client-config.yaml文件
 	if len(os.Args) < 2 {
 		selfPath, e := os.Executable()
 		if e != nil {
 			return e
 		}
-		viper.SetConfigName("server-config")
+		viper.SetConfigName("client-config")
 		viper.SetConfigType("yaml")
 		viper.AddConfigPath(".")
 		viper.AddConfigPath(filepath.Dir(selfPath))
@@ -41,10 +41,10 @@ func InitServerConfig() error {
 	// 设定默认值
 	model.SetDefaultValue(&global.TotalConfig)
 	if global.TotalConfig.ModFolder == "" {
-		global.TotalConfig.ModFolder = "mods"
+		global.TotalConfig.ModFolder = ".minecraft/mods"
 	}
-	sclog.InfoLine("服务端已完成配置加载！")
-	fmt.Println("服务端配置如下：")
+	sclog.InfoLine("客户端已完成配置加载！")
+	fmt.Println("客户端配置如下：")
 	model.PrintConfig(global.TotalConfig, "")
 	fmt.Println()
 	return nil
