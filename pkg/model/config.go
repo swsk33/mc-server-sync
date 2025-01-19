@@ -39,6 +39,8 @@ type ClientConfig struct {
 		// 若开启软删除，则在同步时删除本地模组文件时，不会实际对文件进行删除，而是移动到程序所在目录的mod-backup文件夹
 		SoftRemove bool `mapstructure:"soft-remove" default:"true"`
 		// 忽略同步的模组文件名列表
+		// 默认情况下，若本地存在但服务器不存在的模组会被删除
+		// 若某文件被加入到了忽略列表，则即使服务器不存在该文件也不会被删除
 		IgnoreFileNames []string `mapstructure:"ignore-file-names"`
 	} `mapstructure:"sync"`
 }

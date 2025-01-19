@@ -24,7 +24,12 @@ func InitGinRouterAndRun() error {
 	{
 		modInfoGroup.GET("/get-all", modInfoApi.List)
 	}
+	pingApi := api.GetPingApiInstance()
+	pingGroup := router.Group("/api/ping")
+	{
+		pingGroup.GET("/status", pingApi.Ping)
+	}
 	// 启动服务
-	sclog.InfoLine("启动Web服务器...")
+	sclog.InfoLine("Minecraft模组同步服务器，启动！")
 	return router.Run(fmt.Sprintf(":%d", global.TotalConfig.Port))
 }

@@ -10,3 +10,13 @@ func FileExists(filePath string) bool {
 	}
 	return !os.IsNotExist(e)
 }
+
+// MkdirIfNotExists 创建文件夹如果文件夹不存在
+//
+//   - folder 文件夹路径
+func MkdirIfNotExists(folder string) error {
+	if !FileExists(folder) {
+		return os.MkdirAll(folder, 0755)
+	}
+	return nil
+}

@@ -11,10 +11,10 @@ import (
 )
 
 // InitServerConfig 初始化Viper及其配置对象
-func InitServerConfig() error {
-	// 从命令行参数获取配置文件路径
-	// 如果未传递，则默认搜索当前路径下和可执行文件所在目录下的server-config.yaml文件
-	if len(os.Args) < 2 {
+//
+//   - config 指定配置文件位置，若指定为空字符串""，则默认搜索当前路径下和可执行文件所在目录下的server-config.yaml文件
+func InitServerConfig(config string) error {
+	if config == "" {
 		selfPath, e := os.Executable()
 		if e != nil {
 			return e
@@ -24,7 +24,7 @@ func InitServerConfig() error {
 		viper.AddConfigPath(".")
 		viper.AddConfigPath(filepath.Dir(selfPath))
 	} else {
-		viper.SetConfigFile(os.Args[1])
+		viper.SetConfigFile(config)
 	}
 	// 读取配置
 	e := viper.ReadInConfig()

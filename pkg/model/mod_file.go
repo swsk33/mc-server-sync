@@ -3,7 +3,9 @@ package model
 import (
 	"fmt"
 	"gitee.com/swsk33/mc-server-sync/pkg/util"
+	"gitee.com/swsk33/sclog"
 	"os"
+	"path/filepath"
 )
 
 // ModFile 模组文件信息
@@ -49,4 +51,31 @@ func NewModFile(filepath string) (*ModFile, error) {
 		Sha256:   checksum,
 		Size:     status.Size(),
 	}, nil
+}
+
+// NewModListFromFolder 从文件夹读取其中全部文件作为模组列表
+//
+//   - modFolder 存放模组的文件夹
+//
+// 返回模组文件信息列表
+func NewModListFromFolder(modFolder string) ([]*ModFile, error) {
+	// 获取模组文件夹下文件
+	fileList, e := os.ReadDir(modFolder)
+	if e != nil {
+		sclog.ErrorLine("读取本地模组列表出错！")
+		return nil, e
+	}
+	// 获取文件信息
+	modList := make([]*ModFile, 0)
+	for _, file := range fileList {
+		if !file.IsDir() {
+			modFile, e := NewModFile(filepath.Join(modFolder, file.Name()))
+			if e != nil {
+				sclog.Error("读取模组文件：%s失败！原因：%s\n", file.Name(), e.Error())
+				continue
+			}
+			modList = append(modList, modFile)
+		}
+	}
+	return modList, nil
 }
