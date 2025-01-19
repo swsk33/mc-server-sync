@@ -23,6 +23,9 @@ func (api *FetchApi) GetFileByName(context *gin.Context) {
 		context.JSON(http.StatusNotFound, model.CreateFailedResult(fmt.Sprintf("找不到文件：%s", name)))
 		return
 	}
+	// 设置响应头
+	context.Header("Content-Type", "application/octet-stream")
+	context.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s", name))
 	// 返回文件
 	context.File(path)
 }
