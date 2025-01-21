@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 )
 
 // 全局HTTP客户端
@@ -64,33 +63,4 @@ func SendRequestWithHeader(path, method string, header map[string]string, body [
 // 返回请求体内容，出现错误则返回错误对象
 func SendRequest(path, method string, body []byte) ([]byte, error) {
 	return SendRequestWithHeader(path, method, nil, body)
-}
-
-// DownloadFile 下载文件
-//
-//   - fetchPath 下载文件路径
-//   - savePath 保存路径
-func DownloadFile(fetchPath, savePath string) error {
-	url := fmt.Sprintf("http://%s:%d%s", TotalConfig.Server.Host, TotalConfig.Server.Port, fetchPath)
-	response, e := httpClient.Get(url)
-	if e != nil {
-		return e
-	}
-	defer func() {
-		_ = response.Body.Close()
-	}()
-	// 创建本地文件
-	saveFile, e := os.OpenFile(savePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0755)
-	if e != nil {
-		return e
-	}
-	defer func() {
-		_ = saveFile.Close()
-	}()
-	// 将响应体的内容写入本地文件
-	_, e = io.Copy(saveFile, response.Body)
-	if e != nil {
-		return e
-	}
-	return nil
 }

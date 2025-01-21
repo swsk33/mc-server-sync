@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	tp "gitee.com/swsk33/concurrent-task-pool/v2"
+	gopher_fetch "gitee.com/swsk33/gopher-fetch"
 	"gitee.com/swsk33/mc-server-sync/internal/client/global"
 	"gitee.com/swsk33/mc-server-sync/pkg/model"
 	"gitee.com/swsk33/mc-server-sync/pkg/util"
@@ -26,21 +27,23 @@ func FetchModFromServer(list []*model.ModFile) error {
 		func(task *model.ModFile, pool *tp.TaskPool[*model.ModFile]) {
 			// 执行下载
 			sclog.MutexInfo("正在下载模组文件：%s\n", task.Filename)
+			url := fmt.Sprintf("http://%s:%d/api/fetch/get/%s", global.TotalConfig.Server.Host, global.TotalConfig.Server.Port, task.Filename)
 			savePath := filepath.Join(global.TotalConfig.ModFolder, task.Filename)
-			e := global.DownloadFile(fmt.Sprintf("/api/fetch/get/%s", task.Filename), savePath)
+			fetchTask := gopher_fetch.NewSimpleMonoGetTask(url, savePath)
+			e := fetchTask.Run()
 			if e != nil {
 				sclog.MutexError("下载%s失败！原因：%s，将稍后重试...\n", task.Filename, e.Error())
 				pool.Retry(task)
 				return
 			}
 			// 校验sha256
-			checksum, e := util.CheckFileSHA256(savePath)
+			check, e := fetchTask.CheckFile(gopher_fetch.ChecksumSha256, task.Sha256)
 			if e != nil {
 				sclog.MutexError("校验%s失败！原因：%s，将稍后重试...\n", task.Filename, e.Error())
 				pool.Retry(task)
 				return
 			}
-			if checksum != task.Sha256 {
+			if !check {
 				sclog.MutexError("%s的SHA256与预期不符！将重新下载...\n", task.Filename)
 				pool.Retry(task)
 				return
