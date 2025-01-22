@@ -16,19 +16,21 @@ type BaseConfig struct {
 
 // ServerConfig 服务端配置
 type ServerConfig struct {
-	BaseConfig
+	// 基本通用配置
+	Base BaseConfig `mapstructure:"base"`
 	// 服务端口
 	Port int `mapstructure:"port" default:"25566"`
 	// 守护进程模式运行时的配置
 	Daemon struct {
 		// 日志文件
-		LogFile string `mapstructure:"log-file" default:"log.log"`
+		LogFile string `mapstructure:"log-file" default:"mc-sync-server.log"`
 	} `mapstructure:"daemon"`
 }
 
 // ClientConfig 客户端配置
 type ClientConfig struct {
-	BaseConfig
+	// 基本通用配置
+	Base BaseConfig `mapstructure:"base"`
 	// 连接同步服务器配置
 	Server struct {
 		// 服务器地址

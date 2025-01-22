@@ -7,11 +7,16 @@ import (
 	"gitee.com/swsk33/sclog"
 	"github.com/spf13/cobra"
 	"os"
+	"path/filepath"
 	"time"
 )
 
-// 配置文件位置
-var configPath string
+var (
+	// 配置文件位置
+	configPath string
+	// 强制运行目录为应用程序所在目录
+	forceWorkDirectory bool
+)
 
 // 启动服务端的子命令
 var rootCmd = &cobra.Command{
@@ -30,9 +35,26 @@ func init() {
 	// 初始化命令行
 	rootCmd.CompletionOptions.HiddenDefaultCmd = true
 	rootCmd.Flags().StringVarP(&configPath, "config", "c", "", "指定配置文件以启动客户端端")
+	rootCmd.Flags().BoolVarP(&forceWorkDirectory, "force-work-directory", "d", false, "若带上该标志，则会强制程序的工作目录为程序自身的所在目录")
 }
 
 func startup() {
+	// 工作目录处理
+	if forceWorkDirectory {
+		selfPath, e := os.Executable()
+		if e != nil {
+			sclog.Error("获取自身路径失败！%s\n", e)
+			return
+		}
+		workDir := filepath.Dir(selfPath)
+		e = os.Chdir(workDir)
+		if e != nil {
+			sclog.Error("修改工作目录失败！%s\n", e)
+			return
+		}
+		sclog.Warn("已改变程序工作目录为其自身所在目录：%s\n", workDir)
+		sclog.WarnLine("请注意配置文件以及模组文件夹的相对位置！")
+	}
 	// 读取配置
 	e := initialize.InitClientConfig(configPath)
 	if e != nil {

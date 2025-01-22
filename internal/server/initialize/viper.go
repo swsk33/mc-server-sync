@@ -40,8 +40,8 @@ func InitServerConfig(config string) error {
 	}
 	// 设定默认值
 	model.SetDefaultValue(&global.TotalConfig)
-	if global.TotalConfig.ModFolder == "" {
-		global.TotalConfig.ModFolder = "mods"
+	if global.TotalConfig.Base.ModFolder == "" {
+		global.TotalConfig.Base.ModFolder = "mods"
 	}
 	sclog.InfoLine("服务端已完成配置加载！")
 	fmt.Println("服务端配置如下：")

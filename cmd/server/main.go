@@ -3,6 +3,7 @@ package main
 import (
 	"gitee.com/swsk33/mc-server-sync/internal/server/global"
 	"gitee.com/swsk33/mc-server-sync/internal/server/initialize"
+	"gitee.com/swsk33/mc-server-sync/pkg/util"
 	"gitee.com/swsk33/sclog"
 	"github.com/sevlyar/go-daemon"
 	"github.com/spf13/cobra"
@@ -78,6 +79,11 @@ func startup() {
 	e := initialize.InitServerConfig(configPath)
 	if e != nil {
 		sclog.ErrorLine(e.Error())
+		return
+	}
+	// 检查目录
+	if !util.FileExists(global.TotalConfig.Base.ModFolder) {
+		sclog.Error("模组文件夹：%s不存在！请配置正确的模组文件夹！\n", global.TotalConfig.Base.ModFolder)
 		return
 	}
 	// 启动服务

@@ -20,7 +20,7 @@ type ModInfoMap map[string]*model.ModFile
 // GetLocalModList 从本地获取模组列表
 func GetLocalModList() (ModInfoMap, error) {
 	// 获取模组文件夹下模组列表
-	modList, e := model.NewModListFromFolder(global.TotalConfig.ModFolder)
+	modList, e := model.NewModListFromFolder(global.TotalConfig.Base.ModFolder)
 	if e != nil {
 		return nil, e
 	}
@@ -61,7 +61,7 @@ func GetServerModList() (ModInfoMap, error) {
 func ExcludeModList(client, server ModInfoMap) {
 	// 根据配置获取排除的文件信息，并排除
 	for _, name := range global.TotalConfig.Sync.IgnoreFileNames {
-		path := filepath.Join(global.TotalConfig.ModFolder, name)
+		path := filepath.Join(global.TotalConfig.Base.ModFolder, name)
 		if util.FileExists(path) {
 			modInfo, e := model.NewModFile(path)
 			if e != nil {

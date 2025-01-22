@@ -41,8 +41,8 @@ func InitClientConfig(config string) error {
 	}
 	// 设定默认值
 	model.SetDefaultValue(&global.TotalConfig)
-	if global.TotalConfig.ModFolder == "" {
-		global.TotalConfig.ModFolder = ".minecraft/mods"
+	if global.TotalConfig.Base.ModFolder == "" {
+		global.TotalConfig.Base.ModFolder = ".minecraft/mods"
 	}
 	sclog.InfoLine("客户端已完成配置加载！")
 	fmt.Println("客户端配置如下：")

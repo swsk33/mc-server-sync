@@ -15,7 +15,7 @@ type ModInfoApi struct{}
 // List 列出全部模组文件信息
 func (api *ModInfoApi) List(context *gin.Context) {
 	// 获取模组文件夹下模组列表
-	modList, e := model.NewModListFromFolder(global.TotalConfig.ModFolder)
+	modList, e := model.NewModListFromFolder(global.TotalConfig.Base.ModFolder)
 	if e != nil {
 		context.JSON(http.StatusOK, model.CreateFailedResult(fmt.Sprintf("读取模组文件夹失败！%s", e.Error())))
 		return

@@ -28,7 +28,7 @@ func FetchModFromServer(list []*model.ModFile) error {
 			// 执行下载
 			sclog.MutexInfo("正在下载模组文件：%s\n", task.Filename)
 			url := fmt.Sprintf("http://%s:%d/api/fetch/get/%s", global.TotalConfig.Server.Host, global.TotalConfig.Server.Port, task.Filename)
-			savePath := filepath.Join(global.TotalConfig.ModFolder, task.Filename)
+			savePath := filepath.Join(global.TotalConfig.Base.ModFolder, task.Filename)
 			fetchTask := gopher_fetch.NewSimpleMonoGetTask(url, savePath)
 			e := fetchTask.Run()
 			if e != nil {
@@ -72,7 +72,7 @@ func RemoveModFromLocal(list []*model.ModFile) error {
 			return e
 		}
 		for _, modFile := range list {
-			e := os.Rename(filepath.Join(global.TotalConfig.ModFolder, modFile.Filename), filepath.Join(backupFolder, modFile.Filename))
+			e := os.Rename(filepath.Join(global.TotalConfig.Base.ModFolder, modFile.Filename), filepath.Join(backupFolder, modFile.Filename))
 			if e != nil {
 				sclog.Error("移动文件%s失败！原因：%s\n", modFile.Filename, e.Error())
 				continue
@@ -81,7 +81,7 @@ func RemoveModFromLocal(list []*model.ModFile) error {
 		}
 	} else {
 		for _, modFile := range list {
-			e := os.Remove(filepath.Join(global.TotalConfig.ModFolder, modFile.Filename))
+			e := os.Remove(filepath.Join(global.TotalConfig.Base.ModFolder, modFile.Filename))
 			if e != nil {
 				sclog.Error("删除文件%s失败！原因：%s\n", modFile.Filename, e.Error())
 				continue

@@ -18,7 +18,7 @@ type FetchApi struct{}
 func (api *FetchApi) GetFileByName(context *gin.Context) {
 	// 获取文件
 	name := context.Param("name")
-	path := filepath.Join(global.TotalConfig.ModFolder, name)
+	path := filepath.Join(global.TotalConfig.Base.ModFolder, name)
 	if !util.FileExists(path) {
 		context.JSON(http.StatusNotFound, model.CreateFailedResult(fmt.Sprintf("找不到文件：%s", name)))
 		return

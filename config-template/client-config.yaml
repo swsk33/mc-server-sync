@@ -1,5 +1,7 @@
-# 客户端模组文件夹
-mod-folder: ".minecraft/mods"
+# 基本配置
+base:
+  # 客户端模组文件夹
+  mod-folder: ".minecraft/mods"
 # 同步服务器连接配置
 server:
   host: "127.0.0.1"
