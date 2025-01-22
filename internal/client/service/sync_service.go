@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 	tp "gitee.com/swsk33/concurrent-task-pool/v2"
-	gopher_fetch "gitee.com/swsk33/gopher-fetch"
+	"gitee.com/swsk33/gopher-fetch"
 	"gitee.com/swsk33/mc-server-sync/internal/client/global"
 	"gitee.com/swsk33/mc-server-sync/pkg/model"
 	"gitee.com/swsk33/mc-server-sync/pkg/util"

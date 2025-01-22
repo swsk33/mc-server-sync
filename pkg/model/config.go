@@ -19,6 +19,11 @@ type ServerConfig struct {
 	BaseConfig
 	// 服务端口
 	Port int `mapstructure:"port" default:"25566"`
+	// 守护进程模式运行时的配置
+	Daemon struct {
+		// 日志文件
+		LogFile string `mapstructure:"log-file" default:"log.log"`
+	} `mapstructure:"daemon"`
 }
 
 // ClientConfig 客户端配置

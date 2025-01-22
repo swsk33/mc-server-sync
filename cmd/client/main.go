@@ -7,6 +7,7 @@ import (
 	"gitee.com/swsk33/sclog"
 	"github.com/spf13/cobra"
 	"os"
+	"time"
 )
 
 // 配置文件位置
@@ -88,4 +89,6 @@ func main() {
 			sclog.ErrorLine(e.Error())
 		}
 	}
+	sclog.InfoLine("将在2s后退出...")
+	time.Sleep(2 * time.Second)
 }

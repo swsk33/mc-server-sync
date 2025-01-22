@@ -2,3 +2,6 @@
 mod-folder: "mods"
 # 服务器端口
 port: 25566
+# 守护进程模式运行时的配置
+daemon:
+  log-file: "log.log"
