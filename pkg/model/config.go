@@ -93,9 +93,7 @@ func SetDefaultValue(object any) {
 						fieldValue.SetInt(int64(intValue))
 					}
 				case reflect.Bool:
-					if boolValue, e := strconv.ParseBool(tagValue); e == nil {
-						fieldValue.SetBool(boolValue)
-					}
+					// 暂不处理bool
 				default:
 					panic("不支持的类型")
 				}

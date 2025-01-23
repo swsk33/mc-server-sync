@@ -5,6 +5,7 @@ import (
 	"gitee.com/swsk33/mc-server-sync/internal/client/global"
 	"gitee.com/swsk33/mc-server-sync/internal/client/initialize"
 	"gitee.com/swsk33/mc-server-sync/internal/client/service"
+	"gitee.com/swsk33/mc-server-sync/pkg/util"
 	"gitee.com/swsk33/sclog"
 	"github.com/spf13/cobra"
 	"os"
@@ -17,6 +18,8 @@ var (
 	configPath string
 	// 强制运行目录为应用程序所在目录
 	forceWorkDirectory bool
+	// 是否在终端模拟器中显式执行
+	inTerminal bool
 )
 
 // 启动服务端的子命令
@@ -37,9 +40,29 @@ func init() {
 	rootCmd.CompletionOptions.HiddenDefaultCmd = true
 	rootCmd.Flags().StringVarP(&configPath, "config", "c", "", "指定配置文件以启动客户端端")
 	rootCmd.Flags().BoolVarP(&forceWorkDirectory, "force-work-directory", "d", false, "若带上该标志，则会强制程序的工作目录为程序自身的所在目录")
+	rootCmd.Flags().BoolVarP(&inTerminal, "in-terminal", "t", false, "若带上该标志，则会调用系统可用的终端模拟器程序（例如cmd、gnome-terminal等）弹出新的窗口运行客户端程序，建议使用游戏启动器调用同步客户端时加上该标志，使得同步过程以及日志能够显现")
+}
+
+// 调用终端显示运行客户端逻辑
+func runInTerminal() error {
+	args := util.RemoveArgs(os.Args, "-t", "--in-terminal")
+	e := util.ExecuteByTerminal(args...)
+	if e != nil {
+		return e
+	}
+	return nil
 }
 
 func startup() {
+	// 若在终端运行，则重新调用终端执行客户端命令
+	if inTerminal {
+		e := runInTerminal()
+		if e != nil {
+			sclog.ErrorLine("唤起终端运行出现错误！")
+			sclog.ErrorLine(e.Error())
+		}
+		return
+	}
 	// 工作目录处理
 	if forceWorkDirectory {
 		selfPath, e := os.Executable()

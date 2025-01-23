@@ -36,13 +36,7 @@ func init() {
 // 在守护进程启动Web服务器后台运行
 func startDaemon() error {
 	// 处理命令行，移除-d和--daemon
-	args := make([]string, 0)
-	for _, arg := range os.Args {
-		if arg == "-d" || arg == "--daemon" {
-			continue
-		}
-		args = append(args, arg)
-	}
+	args := util.RemoveArgs(os.Args, "-d", "--daemon")
 	// 创建守护进程对象，包含参数等
 	daemonContext := &daemon.Context{
 		// 日志文件路径
