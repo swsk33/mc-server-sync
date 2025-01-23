@@ -6,4 +6,4 @@ base:
 port: 25566
 # 守护进程模式运行时的配置
 daemon:
-  log-file: "log.log"
+  log-file: "mc-sync-server.log"

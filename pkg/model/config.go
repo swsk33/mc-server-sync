@@ -50,6 +50,9 @@ type ClientConfig struct {
 		// 若某文件被加入到了忽略列表，则即使服务器不存在该文件也不会被删除
 		IgnoreFileNames []string `mapstructure:"ignore-file-names"`
 	} `mapstructure:"sync"`
+	// 退出延迟，同步完成后延迟多少秒退出，若设为0则同步完成立即退出
+	// 建议设定延迟几秒，以便于查看同步日志，排查错误
+	ExitDelay int `mapstructure:"exit-delay" default:"2"`
 }
 
 // SetDefaultValue 根据对象的default标签设定字段默认值

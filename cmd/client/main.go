@@ -2,6 +2,7 @@ package main
 
 import (
 	"gitee.com/swsk33/gopher-fetch"
+	"gitee.com/swsk33/mc-server-sync/internal/client/global"
 	"gitee.com/swsk33/mc-server-sync/internal/client/initialize"
 	"gitee.com/swsk33/mc-server-sync/internal/client/service"
 	"gitee.com/swsk33/sclog"
@@ -111,6 +112,8 @@ func main() {
 			sclog.ErrorLine(e.Error())
 		}
 	}
-	sclog.InfoLine("将在2s后退出...")
-	time.Sleep(2 * time.Second)
+	if global.TotalConfig.ExitDelay > 0 {
+		sclog.Info("将在%ds后退出...\n", global.TotalConfig.ExitDelay)
+		time.Sleep(time.Duration(global.TotalConfig.ExitDelay) * time.Second)
+	}
 }

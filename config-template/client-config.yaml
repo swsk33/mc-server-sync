@@ -14,3 +14,6 @@ sync:
   soft-remove: true
   ignore-file-names:
     - "example-mod.jar"
+# 退出延迟，同步完成后延迟多少秒退出，若设为0则同步完成立即退出
+# 建议设定延迟几秒，以便于查看同步日志，排查错误
+exit-delay: 3
