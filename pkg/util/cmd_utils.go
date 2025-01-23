@@ -78,12 +78,17 @@ func ExecuteByTerminal(args ...string) error {
 		}
 		// 组装参数
 		totalArgs := make([]string, 0)
-		if terminal == "gnome-terminal" {
+		switch terminal {
+		case "gnome-terminal":
 			totalArgs = append(totalArgs, "--wait", "--", "sh", "-c", strings.Join(args, " "))
-		} else {
+		case "xterm":
+			command := fmt.Sprintf("sh -c '%s'", strings.Join(args, " "))
+			totalArgs = append(totalArgs, "-fs", "12", "-fa", "Unifont", "-e", command)
+		default:
 			command := fmt.Sprintf("sh -c '%s'", strings.Join(args, " "))
 			totalArgs = append(totalArgs, "-e", command)
 		}
+		// 执行命令
 		cmd := exec.Command(terminal, totalArgs...)
 		return cmd.Run()
 	}
