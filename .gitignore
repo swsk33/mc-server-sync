@@ -4,7 +4,9 @@
 
 # 编译产物
 *.exe
+*.exe.bak
 target/
+*.syso
 
 # draw.io
 .$*.bkp

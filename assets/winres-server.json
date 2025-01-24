@@ -1,0 +1,49 @@
+{
+	"RT_GROUP_ICON": {
+		"APP": {
+			"0000": [
+				"server-icon.png"
+			]
+		}
+	},
+	"RT_MANIFEST": {
+		"#1": {
+			"2052": {
+				"description": "Minecraft模组同步-服务端",
+				"minimum-os": "win7",
+				"execution-level": "highest",
+				"ui-access": false,
+				"auto-elevate": false,
+				"dpi-awareness": "system",
+				"disable-theming": false,
+				"disable-window-filtering": false,
+				"high-resolution-scrolling-aware": false,
+				"ultra-high-resolution-scrolling-aware": false,
+				"long-path-aware": false,
+				"printer-driver-isolation": false,
+				"gdi-scaling": false,
+				"segment-heap": false,
+				"use-common-controls-v6": false
+			}
+		}
+	},
+	"RT_VERSION": {
+		"#1": {
+			"0000": {
+				"fixed": {
+					"file_version": "1.0.0.0"
+				},
+				"info": {
+					"2052": {
+						"CompanyName": "swsk33",
+						"FileDescription": "用于同步Minecraft模组的服务端",
+						"LegalCopyright": "swsk33 © 2025",
+						"OriginalFilename": "mc-sync-server.exe",
+						"ProductName": "Minecraft模组同步-服务端",
+						"ProductVersion": "1.0.0.0"
+					}
+				}
+			}
+		}
+	}
+}

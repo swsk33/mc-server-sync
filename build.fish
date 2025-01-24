@@ -43,6 +43,11 @@ function build_release
     echo 正在构建代码...
     set output_exe_path $temp_dir/$output_exe_name
     GOOS=$build_os GOARCH=$build_arch go build -ldflags "-w -s" -o $output_exe_path gitee.com/swsk33/mc-server-sync/cmd/$build_target
+    # Windows系统则构建资源
+    if test $build_os = windows
+        echo 正在构建并添加Windows资源文件...
+        go-winres patch --no-backup --in ./assets/winres-{$build_target}.json $output_exe_path
+    end
     # 压缩可执行文件
     echo 正在压缩...
     upx -9 $output_exe_path
@@ -64,6 +69,7 @@ function build_release
     echo 构建完成！
     echo 正在清理...
     rm -r $temp_dir
+    echo 本次全部构建流程完成！
 end
 
 # 构建参数列表
