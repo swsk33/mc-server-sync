@@ -47,7 +47,7 @@ func CheckCommand(exe string) bool {
 //
 // 返回系统安装的一个终端程序，否则返回错误对象
 func GetSystemTerminal() (string, error) {
-	linuxTerminals := []string{"gnome-terminal", "konsole", "xterm", "deepin-terminal", "kgx", "tilix"}
+	linuxTerminals := []string{"gnome-terminal", "konsole", "deepin-terminal", "xterm", "kgx", "tilix"}
 	for _, terminal := range linuxTerminals {
 		if CheckCommand(terminal) {
 			return terminal, nil

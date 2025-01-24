@@ -11,29 +11,19 @@ import (
 
 // 用于计算模组列表的服务逻辑
 
-// ModInfoMap 模组列表哈希表类型，其中：
-//
-//   - 键：模组文件的sha256摘要
-//   - 值：完整模组文件元数据
-type ModInfoMap map[string]*model.ModFile
-
 // GetLocalModList 从本地获取模组列表
-func GetLocalModList() (ModInfoMap, error) {
+func GetLocalModList() (model.ModInfoMap, error) {
 	// 获取模组文件夹下模组列表
 	modList, e := model.NewModListFromFolder(global.TotalConfig.Base.ModFolder)
 	if e != nil {
 		return nil, e
 	}
-	// 整理结果
-	result := make(ModInfoMap)
-	for _, item := range modList {
-		result[item.Sha256] = item
-	}
-	return result, nil
+	// 返回结果
+	return model.NewModInfoMapFromSlice(modList), nil
 }
 
 // GetServerModList 从服务端获取模组列表
-func GetServerModList() (ModInfoMap, error) {
+func GetServerModList() (model.ModInfoMap, error) {
 	// 发送请求
 	response, e := global.SendRequest("/api/mod-info/get-all", http.MethodGet, nil)
 	if e != nil {
@@ -46,19 +36,15 @@ func GetServerModList() (ModInfoMap, error) {
 		sclog.ErrorLine("请求模组列表失败！")
 		return nil, e
 	}
-	// 整理结果
-	result := make(ModInfoMap)
-	for _, item := range modList {
-		result[item.Sha256] = item
-	}
-	return result, nil
+	// 返回结果
+	return model.NewModInfoMapFromSlice(modList), nil
 }
 
 // ExcludeModList 排除相关模组文件
 //
 //   - client 客户端本地模组文件列表
 //   - server 服务端获取的模组文件列表
-func ExcludeModList(client, server ModInfoMap) {
+func ExcludeModList(client, server model.ModInfoMap) {
 	// 根据配置获取排除的文件信息，并排除
 	for _, name := range global.TotalConfig.Sync.IgnoreFileNames {
 		path := filepath.Join(global.TotalConfig.Base.ModFolder, name)
@@ -68,8 +54,8 @@ func ExcludeModList(client, server ModInfoMap) {
 				sclog.ErrorLine(e.Error())
 				continue
 			}
-			delete(client, modInfo.Sha256)
-			delete(server, modInfo.Sha256)
+			client.Remove(modInfo)
+			server.Remove(modInfo)
 		}
 	}
 }
@@ -81,14 +67,8 @@ func ExcludeModList(client, server ModInfoMap) {
 //   - server 服务端获取的模组文件列表
 //
 // 返回需要下载的模组列表，模组文件名以服务端为基准
-func GetDownloadModList(client, server ModInfoMap) []*model.ModFile {
-	list := make([]*model.ModFile, 0)
-	for checksum, info := range server {
-		if _, ok := client[checksum]; !ok {
-			list = append(list, info)
-		}
-	}
-	return list
+func GetDownloadModList(client, server model.ModInfoMap) []*model.ModFile {
+	return server.Subtract(client)
 }
 
 // GetRemovedModList 计算需要从本地移除的模组信息列表
@@ -98,12 +78,6 @@ func GetDownloadModList(client, server ModInfoMap) []*model.ModFile {
 //   - server 服务端获取的模组文件列表
 //
 // 返回需要移除的模组列表，模组文件名以客户端为基准
-func GetRemovedModList(client, server ModInfoMap) []*model.ModFile {
-	list := make([]*model.ModFile, 0)
-	for checksum, info := range client {
-		if _, ok := server[checksum]; !ok {
-			list = append(list, info)
-		}
-	}
-	return list
+func GetRemovedModList(client, server model.ModInfoMap) []*model.ModFile {
+	return client.Subtract(server)
 }

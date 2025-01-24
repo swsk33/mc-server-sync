@@ -38,7 +38,7 @@ func init() {
 	gopher_fetch.ConfigEnvironmentProxy()
 	// 初始化命令行
 	rootCmd.CompletionOptions.HiddenDefaultCmd = true
-	rootCmd.Flags().StringVarP(&configPath, "config", "c", "", "指定配置文件以启动客户端端")
+	rootCmd.Flags().StringVarP(&configPath, "config", "c", "", "指定配置文件以启动客户端")
 	rootCmd.Flags().BoolVarP(&forceWorkDirectory, "force-work-directory", "d", false, "若带上该标志，则会强制程序的工作目录为程序自身的所在目录")
 	rootCmd.Flags().BoolVarP(&inTerminal, "in-terminal", "t", false, "若带上该标志，则会调用系统可用的终端模拟器程序（例如cmd、gnome-terminal等）弹出新的窗口运行客户端程序，建议使用游戏启动器调用同步客户端时加上该标志，使得同步过程以及日志能够显现")
 }
@@ -115,7 +115,10 @@ func startup() {
 	// 移除本地多余的模组
 	sclog.InfoLine("移除本地多余的模组...")
 	removeList := service.GetRemovedModList(clientModMap, serverModMap)
-	e = service.RemoveModFromLocal(removeList)
+	service.RemoveModFromLocal(removeList)
+	// 最后，检查本地重复的模组文件并移除
+	sclog.InfoLine("移除本地重复模组...")
+	e = service.RemoveDuplicateModFromLocal()
 	if e != nil {
 		sclog.ErrorLine("移除本地多余模组时发生错误！")
 		sclog.ErrorLine(e.Error())
