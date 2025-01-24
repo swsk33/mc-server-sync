@@ -10,7 +10,7 @@ ADD start.sh /
 ADD timezone.tar /usr/share/zoneinfo/
 # 初始化
 RUN chmod +x /start.sh \
-	&& mkdir -p /minecraft/data \
+	&& chmod +x /minecraft/mc-sync-server \
 	&& java -jar /minecraft/fabric-server.jar --initSettings \
 	&& rm -r /minecraft/data/logs/
 # 端口
