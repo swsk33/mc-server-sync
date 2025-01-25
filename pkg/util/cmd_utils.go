@@ -2,9 +2,12 @@ package util
 
 import (
 	"fmt"
+	"gitee.com/swsk33/sclog"
+	"os"
 	"os/exec"
 	"runtime"
 	"strings"
+	"time"
 )
 
 // RemoveArgs 从命令行参数切片中移除某些参数
@@ -93,4 +96,14 @@ func ExecuteByTerminal(args ...string) error {
 		return cmd.Run()
 	}
 	return fmt.Errorf("暂不支持该操作系统：%s", runtime.GOOS)
+}
+
+// ErrorExitAndDelay 在程序出现严重错误时，延迟几秒并退出
+// 请注意，该函数将导致程序以状态码1退出
+//
+//   - delay 退出之前延迟时间，单位s
+func ErrorExitAndDelay(delay int) {
+	sclog.Warn("将在%ds后退出...\n", delay)
+	time.Sleep(time.Duration(delay) * time.Second)
+	os.Exit(1)
 }

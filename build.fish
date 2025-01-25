@@ -1,9 +1,13 @@
 #!/bin/fish
 
-set app_version $argv[1]
+set client_version $argv[1]
+set server_version $argv[2]
 
-if test -z $app_version
-    echo 请指定版本号！
+# 参数检查
+if test -z "$client_version" -o -z "$server_version"
+    echo 请指定客户端和服务端版本号！
+    echo 命令格式：
+    echo './build.fish 客户端版本号 服务端版本号'
     exit
 end
 
@@ -59,7 +63,11 @@ function build_release
     if test $build_arch = 386
         set build_arch i386
     end
-    set output_archive_path $base_output/{$base_exe_name}{$build_target}-$build_os-$build_arch-$app_version
+    set name_version $client_version
+    if test $build_target = server
+        set name_version $server_version
+    end
+    set output_archive_path $base_output/{$base_exe_name}{$build_target}-$build_os-$build_arch-$name_version
     if test $archive_format = 7z
         7z a -t7z -mx9 $output_archive_path.7z ./$temp_dir/*
     else

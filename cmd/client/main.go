@@ -5,6 +5,7 @@ import (
 	"gitee.com/swsk33/mc-server-sync/internal/client/global"
 	"gitee.com/swsk33/mc-server-sync/internal/client/initialize"
 	"gitee.com/swsk33/mc-server-sync/internal/client/service"
+	"gitee.com/swsk33/mc-server-sync/pkg/param"
 	"gitee.com/swsk33/mc-server-sync/pkg/util"
 	"gitee.com/swsk33/sclog"
 	"github.com/spf13/cobra"
@@ -28,7 +29,10 @@ var rootCmd = &cobra.Command{
 	Short: "Minecraft模组同步-客户端",
 	Long:  "用于同步Minecraft模组的程序，该命令用于启动同步客户端",
 	Run: func(cmd *cobra.Command, args []string) {
-		startup()
+		// 执行启动逻辑
+		e := startup()
+		// 错误处理
+		handleClientLaunchError(e)
 	},
 }
 
@@ -53,28 +57,27 @@ func runInTerminal() error {
 	return nil
 }
 
-func startup() {
+func startup() error {
 	// 若在终端运行，则重新调用终端执行客户端命令
 	if inTerminal {
 		e := runInTerminal()
 		if e != nil {
 			sclog.ErrorLine("唤起终端运行出现错误！")
-			sclog.ErrorLine(e.Error())
 		}
-		return
+		return e
 	}
 	// 工作目录处理
 	if forceWorkDirectory {
 		selfPath, e := os.Executable()
 		if e != nil {
-			sclog.Error("获取自身路径失败！%s\n", e)
-			return
+			sclog.ErrorLine("获取自身路径失败！")
+			return e
 		}
 		workDir := filepath.Dir(selfPath)
 		e = os.Chdir(workDir)
 		if e != nil {
-			sclog.Error("修改工作目录失败！%s\n", e)
-			return
+			sclog.ErrorLine("修改工作目录失败！")
+			return e
 		}
 		sclog.Warn("已改变程序工作目录为其自身所在目录：%s\n", workDir)
 		sclog.WarnLine("请注意配置文件以及模组文件夹的相对位置！")
@@ -82,24 +85,21 @@ func startup() {
 	// 读取配置
 	e := initialize.InitClientConfig(configPath)
 	if e != nil {
-		sclog.ErrorLine(e.Error())
-		return
+		return e
 	}
 	// 读取本地模组
 	sclog.InfoLine("正在获取本地模组...")
 	clientModMap, e := service.GetLocalModList()
 	if e != nil {
 		sclog.ErrorLine("获取本地模组失败！")
-		sclog.ErrorLine(e.Error())
-		return
+		return e
 	}
 	// 获取服务端模组
 	sclog.InfoLine("正在获取同步服务器模组列表...")
 	serverModMap, e := service.GetServerModList()
 	if e != nil {
 		sclog.ErrorLine("获取服务器模组失败！")
-		sclog.ErrorLine(e.Error())
-		return
+		return e
 	}
 	// 排除模组列表
 	service.ExcludeModList(clientModMap, serverModMap)
@@ -109,8 +109,7 @@ func startup() {
 	e = service.FetchModFromServer(fetchList)
 	if e != nil {
 		sclog.ErrorLine("从服务端同步模组失败！")
-		sclog.ErrorLine(e.Error())
-		return
+		return e
 	}
 	// 移除本地多余的模组
 	sclog.InfoLine("移除本地多余的模组...")
@@ -121,23 +120,34 @@ func startup() {
 	e = service.RemoveDuplicateModFromLocal()
 	if e != nil {
 		sclog.ErrorLine("移除本地多余模组时发生错误！")
-		sclog.ErrorLine(e.Error())
-		return
+		return e
 	}
 	sclog.InfoLine("同步工作已全部完成！")
+	return nil
+}
+
+// 处理客户端启动错误，若e不为nil，则退出程序
+func handleClientLaunchError(e error) {
+	if e != nil {
+		sclog.ErrorLine("启动同步客户端失败！")
+		sclog.ErrorLine(e.Error())
+		util.ErrorExitAndDelay(3)
+	}
 }
 
 func main() {
+	sclog.Info("模组同步-客户端 v%s，启动！\n", param.ClientVersion)
+	// 错误对象
+	var e error
 	// 视情况使用Cobra命令行逻辑或者直接启动
 	if len(os.Args) < 2 {
-		startup()
+		e = startup()
 	} else {
-		e := rootCmd.Execute()
-		if e != nil {
-			sclog.ErrorLine("执行客户端启动命令出错！")
-			sclog.ErrorLine(e.Error())
-		}
+		e = rootCmd.Execute()
 	}
+	// 错误处理
+	handleClientLaunchError(e)
+	// 正常情况将按照配置文件延迟退出
 	if global.TotalConfig.ExitDelay > 0 {
 		sclog.Info("将在%ds后退出...\n", global.TotalConfig.ExitDelay)
 		time.Sleep(time.Duration(global.TotalConfig.ExitDelay) * time.Second)

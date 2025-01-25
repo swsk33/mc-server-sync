@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"gitee.com/swsk33/mc-server-sync/internal/server/global"
 	"gitee.com/swsk33/mc-server-sync/internal/server/initialize"
+	"gitee.com/swsk33/mc-server-sync/pkg/param"
 	"gitee.com/swsk33/mc-server-sync/pkg/util"
 	"gitee.com/swsk33/sclog"
 	"github.com/sevlyar/go-daemon"
@@ -23,7 +25,10 @@ var rootCmd = &cobra.Command{
 	Short: "Minecraft模组同步-服务端",
 	Long:  "用于同步Minecraft模组的轻量级服务器，该命令用于启动同步服务端",
 	Run: func(cmd *cobra.Command, args []string) {
-		startup()
+		// 执行启动逻辑
+		e := startup()
+		// 错误处理
+		handleServerLaunchError(e)
 	},
 }
 
@@ -68,17 +73,16 @@ func startDaemon() error {
 }
 
 // 启动服务端的逻辑
-func startup() {
+func startup() error {
 	// 初始化配置
 	e := initialize.InitServerConfig(configPath)
 	if e != nil {
-		sclog.ErrorLine(e.Error())
-		return
+		return e
 	}
 	// 检查目录
 	if !util.FileExists(global.TotalConfig.Base.ModFolder) {
 		sclog.Error("模组文件夹：%s不存在！请配置正确的模组文件夹！\n", global.TotalConfig.Base.ModFolder)
-		return
+		return fmt.Errorf("模组文件夹：%s不存在！\n", global.TotalConfig.Base.ModFolder)
 	}
 	// 启动服务
 	if isDaemon {
@@ -87,20 +91,31 @@ func startup() {
 		e = initialize.InitGinRouterAndRun()
 	}
 	if e != nil {
-		sclog.ErrorLine("启动同步服务器出错！")
+		sclog.ErrorLine("启动同步Web服务器出错！")
+		return e
+	}
+	return nil
+}
+
+// 处理服务端启动错误，若e不为nil，则退出程序
+func handleServerLaunchError(e error) {
+	if e != nil {
+		sclog.ErrorLine("启动同步服务端失败！")
 		sclog.ErrorLine(e.Error())
+		util.ErrorExitAndDelay(3)
 	}
 }
 
 func main() {
+	sclog.Info("模组同步-服务端 v%s，启动！\n", param.ServerVersion)
+	// 错误对象
+	var e error
 	// 视情况使用Cobra命令行逻辑或者直接启动
 	if len(os.Args) < 2 {
-		startup()
+		e = startup()
 	} else {
-		e := rootCmd.Execute()
-		if e != nil {
-			sclog.ErrorLine("执行服务端启动命令出错！")
-			sclog.ErrorLine(e.Error())
-		}
+		e = rootCmd.Execute()
 	}
+	// 错误处理
+	handleServerLaunchError(e)
 }
