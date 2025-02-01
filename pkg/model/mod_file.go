@@ -95,29 +95,18 @@ func NewModListFromFolder(modFolder, modType string) ([]*ModFile, error) {
 
 // ModInfoMap 模组列表哈希表类型，其中：
 //
-//   - 键：模组文件的sha256摘要
+//   - 键：模组文件的SHA256摘要
 //   - 值：完整模组文件元数据
 type ModInfoMap map[string]*ModFile
 
-// NewModInfoMapFromSlice 从模组列表新建模组哈希表
+// NewModInfoMapFromSlice 从一个模组对象切片中创建一个模组哈希表
 //
-//   - list 模组列表
+//   - list 模组对象列表切片
 //
-// 返回新的模组哈希表对象
-func NewModInfoMapFromSlice(list []*ModFile) ModInfoMap {
-	modMap := make(ModInfoMap)
-	for _, item := range list {
-		modMap[item.Sha256] = item
-	}
-	return modMap
-}
-
-// FindDuplicate 查找模组列表切片中SHA256重复的模组对象
-//
-//   - list 要查找的列表
-//
-// 返回重复的模组对象
-func FindDuplicate(list []*ModFile) []*ModFile {
+// 分别返回：
+//   - 包含原始列表的模组哈希表（已去除SHA256重复的）
+//   - 原始列表中重复的模组对象列表（即文件名不同但SHA256和其它某个文件相同的文件列表）
+func NewModInfoMapFromSlice(list []*ModFile) (ModInfoMap, []*ModFile) {
 	duplicates := make([]*ModFile, 0)
 	modMap := make(ModInfoMap)
 	for _, item := range list {
@@ -127,7 +116,7 @@ func FindDuplicate(list []*ModFile) []*ModFile {
 		}
 		modMap[item.Sha256] = item
 	}
-	return duplicates
+	return modMap, duplicates
 }
 
 // Contains 查看当前模组哈希表中是否存在某个模组

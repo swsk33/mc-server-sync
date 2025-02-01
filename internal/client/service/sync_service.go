@@ -28,7 +28,9 @@ func removeModFile(mod *model.ModFile) error {
 			return e
 		}
 		// 移动模组文件
-		e = os.Rename(filepath.Join(global.TotalConfig.Base.ModFolder, mod.Filename), filepath.Join(backupFolder, mod.Filename))
+		origin := filepath.Join(global.TotalConfig.Base.ModFolder, mod.Filename)
+		destination := filepath.Join(backupFolder, mod.Filename)
+		e = util.MoveFile(origin, destination)
 		if e != nil {
 			sclog.Error("移动文件%s失败！\n", mod.Filename)
 			return e
@@ -48,7 +50,7 @@ func removeModFile(mod *model.ModFile) error {
 
 // FetchModFromServer 从服务器下载缺少的模组到本地
 //
-//   - list 要下载的模组列表
+//   - list 要下载的模组列表，每个模组对象需要正确配置Type属性
 func FetchModFromServer(list []*model.ModFile) error {
 	if len(list) == 0 {
 		sclog.InfoLine("无需从服务端同步下载模组！")
@@ -59,7 +61,7 @@ func FetchModFromServer(list []*model.ModFile) error {
 		func(task *model.ModFile, pool *tp.TaskPool[*model.ModFile]) {
 			// 执行下载
 			sclog.MutexInfo("正在下载模组文件：%s\n", task.Filename)
-			url := fmt.Sprintf("http://%s:%d/api/fetch/get/%s", global.TotalConfig.Server.Host, global.TotalConfig.Server.Port, task.Filename)
+			url := fmt.Sprintf("http://%s:%d/api/fetch/get/%s/%s", global.TotalConfig.Server.Host, global.TotalConfig.Server.Port, task.Type, task.Filename)
 			savePath := filepath.Join(global.TotalConfig.Base.ModFolder, task.Filename)
 			fetchTask := gopher_fetch.NewSimpleMonoGetTask(url, savePath)
 			e := fetchTask.Run()
@@ -102,33 +104,5 @@ func RemoveModFromLocal(list []*model.ModFile) {
 			sclog.ErrorLine(e.Error())
 		}
 	}
-	sclog.InfoLine("已移除全部多余模组！")
 	return
-}
-
-// RemoveDuplicateModFromLocal 从本地移除重复的模组
-// 将会移除本地文件名不同、但是SHA256相同的模组文件
-func RemoveDuplicateModFromLocal() error {
-	// 再次获取本地模组列表
-	list, e := model.NewModListFromFolder(global.TotalConfig.Base.ModFolder)
-	if e != nil {
-		sclog.ErrorLine("获取本地模组列表出错！")
-		return e
-	}
-	// 查找出重复的
-	duplicates := model.FindDuplicate(list)
-	if len(duplicates) == 0 {
-		sclog.InfoLine("本地没有重复的模组，无需移除！")
-		return nil
-	}
-	// 进行移除操作
-	for _, item := range duplicates {
-		sclog.Warn("发现本地有重复模组文件：%s，将进行移除...\n", item.Filename)
-		e := removeModFile(item)
-		if e != nil {
-			sclog.ErrorLine(e.Error())
-		}
-	}
-	sclog.InfoLine("已移除全部本地重复的模组文件！")
-	return nil
 }

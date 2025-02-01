@@ -64,6 +64,7 @@ func startup() error {
 		if e != nil {
 			sclog.ErrorLine("唤起终端运行出现错误！")
 		}
+		// 直接返回
 		return e
 	}
 	// 工作目录处理
@@ -87,12 +88,16 @@ func startup() error {
 	if e != nil {
 		return e
 	}
-	// 读取本地模组
+	// 读取本地模组并移除重复
 	sclog.InfoLine("正在获取本地模组...")
-	clientModMap, e := service.GetLocalModList()
+	clientModMap, duplicates, e := service.GetLocalModList()
 	if e != nil {
 		sclog.ErrorLine("获取本地模组失败！")
 		return e
+	}
+	if len(duplicates) > 0 {
+		sclog.Warn("发现本地存在%d个重复模组，将进行移除！\n", len(duplicates))
+		service.RemoveModFromLocal(duplicates)
 	}
 	// 获取服务端模组
 	sclog.InfoLine("正在获取同步服务器模组列表...")
@@ -115,13 +120,6 @@ func startup() error {
 	sclog.InfoLine("移除本地多余的模组...")
 	removeList := service.GetRemovedModList(clientModMap, serverModMap)
 	service.RemoveModFromLocal(removeList)
-	// 最后，检查本地重复的模组文件并移除
-	sclog.InfoLine("移除本地重复模组...")
-	e = service.RemoveDuplicateModFromLocal()
-	if e != nil {
-		sclog.ErrorLine("移除本地多余模组时发生错误！")
-		return e
-	}
 	sclog.InfoLine("同步工作已全部完成！")
 	return nil
 }

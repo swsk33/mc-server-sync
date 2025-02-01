@@ -12,32 +12,62 @@ import (
 // 用于计算模组列表的服务逻辑
 
 // GetLocalModList 从本地获取模组列表
-func GetLocalModList() (model.ModInfoMap, error) {
+//
+// 分别返回：
+//   - 本地模组列表（已去重）
+//   - 重复的模组文件列表
+//   - 错误对象
+func GetLocalModList() (model.ModInfoMap, []*model.ModFile, error) {
 	// 获取模组文件夹下模组列表
-	modList, e := model.NewModListFromFolder(global.TotalConfig.Base.ModFolder)
+	modList, e := model.NewModListFromFolder(global.TotalConfig.Base.ModFolder, model.ModTypeBoth)
 	if e != nil {
-		return nil, e
+		return nil, nil, e
 	}
 	// 返回结果
-	return model.NewModInfoMapFromSlice(modList), nil
+	modMap, duplicates := model.NewModInfoMapFromSlice(modList)
+	return modMap, duplicates, nil
 }
 
-// GetServerModList 从服务端获取模组列表
+// GetServerModList 从服务端获取需要同步的模组列表
+//
+// 分别返回：
+//   - 服务端模组列表
+//   - 错误对象
 func GetServerModList() (model.ModInfoMap, error) {
 	// 发送请求
-	response, e := global.SendRequest("/api/mod-info/get-all", http.MethodGet, nil)
+	response, e := global.SendRequest("/api/mod-info/get-all-both", http.MethodGet, nil)
 	if e != nil {
-		sclog.ErrorLine("发送模组列表请求出错！")
+		sclog.ErrorLine("发送双端模组列表请求出错！")
 		return nil, e
 	}
 	// 解析结果
 	modList, e := model.ParseResultJson[[]*model.ModFile](response)
 	if e != nil {
-		sclog.ErrorLine("请求模组列表失败！")
+		sclog.ErrorLine("解析双端模组列表请求失败！")
 		return nil, e
 	}
+	// 根据配置，获取服务端提供的仅客户端类型模组列表并合并到服务端模组列表
+	if global.TotalConfig.Sync.FetchClientMods {
+		// 发送请求
+		clientModResponse, e := global.SendRequest("/api/mod-info/get-all-client", http.MethodGet, nil)
+		if e != nil {
+			sclog.ErrorLine("发送仅客户端模组列表请求出错！")
+			return nil, e
+		}
+		// 解析结果
+		clientModList, e := model.ParseResultJson[[]*model.ModFile](clientModResponse)
+		if e != nil {
+			sclog.ErrorLine("解析仅客户端模组列表请求失败！")
+			return nil, e
+		}
+		// 合并结果
+		modList = append(modList, clientModList...)
+	} else {
+		sclog.WarnLine("未开启仅客户端类型模组同步，将不会从服务端获取并同步服务器提供的客户端类型模组列表！")
+	}
 	// 返回结果
-	return model.NewModInfoMapFromSlice(modList), nil
+	modMap, _ := model.NewModInfoMapFromSlice(modList)
+	return modMap, nil
 }
 
 // ExcludeModList 排除相关模组文件
@@ -49,7 +79,7 @@ func ExcludeModList(client, server model.ModInfoMap) {
 	for _, name := range global.TotalConfig.Sync.IgnoreFileNames {
 		path := filepath.Join(global.TotalConfig.Base.ModFolder, name)
 		if util.FileExists(path) {
-			modInfo, e := model.NewModFile(path)
+			modInfo, e := model.NewModFile(path, model.ModTypeBoth)
 			if e != nil {
 				sclog.ErrorLine(e.Error())
 				continue
