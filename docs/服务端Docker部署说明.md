@@ -73,6 +73,8 @@ docker run -itd --name minecraft-fabric-server-sync \
 
 通过上述配置数据卷之后，模组文件夹位于：`/var/lib/docker/volumes/minecraft-fabric-data/_data/mods`，将模组放进去后，重启容器即可，正确地停止并重启服务端请看下面说明。
 
+此外，同步服务端的仅客户端模组文件夹默认位于：`/var/lib/docker/volumes/minecraft-fabric-data/_data/client-mods`，可将想要同步给玩家的仅客户端模组放入。
+
 ## 6，正确地停止服务端
 
 由于Minecraft服务端是交互式的，因此我们不能直接通过`docker stop`或者`docker restart`命令来停止和重启容器，否则可能导致服务端数据丢失。
