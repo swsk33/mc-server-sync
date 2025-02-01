@@ -84,6 +84,14 @@ func startup() error {
 		sclog.Error("模组文件夹：%s不存在！请配置正确的模组文件夹！\n", global.TotalConfig.Base.ModFolder)
 		return fmt.Errorf("模组文件夹：%s不存在！\n", global.TotalConfig.Base.ModFolder)
 	}
+	if !util.FileExists(global.TotalConfig.ClientModFolder) {
+		sclog.Warn("仅客户端类型模组文件夹：%s不存在！将创建该文件夹...\n", global.TotalConfig.ClientModFolder)
+		e := util.MkdirIfNotExists(global.TotalConfig.ClientModFolder)
+		if e != nil {
+			sclog.Error("创建文件夹：%s失败！\n", global.TotalConfig.ClientModFolder)
+			return e
+		}
+	}
 	// 启动服务
 	if isDaemon {
 		e = startDaemon()

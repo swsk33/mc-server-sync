@@ -8,6 +8,14 @@ import (
 	"path/filepath"
 )
 
+// 模组类型常量
+const (
+	// ModTypeBoth 双端类型模组
+	ModTypeBoth = "both"
+	// ModTypeClient 仅客户端类型模组
+	ModTypeClient = "client"
+)
+
 // ModFile 模组文件信息
 type ModFile struct {
 	// 文件名
@@ -16,14 +24,17 @@ type ModFile struct {
 	Sha256 string `json:"sha256"`
 	// 文件大小（字节）
 	Size int64 `json:"size"`
+	// 模组类型（双端或者客户端）
+	Type string `json:"type"`
 }
 
 // NewModFile 指定模组文件完整路径，读取并返回其模组文件信息对象
 //
 //   - filepath 模组文件完整路径
+//   - modType 模组类型
 //
 // 返回模组文件信息
-func NewModFile(filepath string) (*ModFile, error) {
+func NewModFile(filepath, modType string) (*ModFile, error) {
 	// 打开文件
 	file, e := os.Open(filepath)
 	if e != nil {
@@ -50,15 +61,17 @@ func NewModFile(filepath string) (*ModFile, error) {
 		Filename: status.Name(),
 		Sha256:   checksum,
 		Size:     status.Size(),
+		Type:     modType,
 	}, nil
 }
 
 // NewModListFromFolder 从文件夹读取其中全部文件作为模组列表
 //
 //   - modFolder 存放模组的文件夹
+//   - modType 模组类型
 //
 // 返回模组文件信息列表
-func NewModListFromFolder(modFolder string) ([]*ModFile, error) {
+func NewModListFromFolder(modFolder, modType string) ([]*ModFile, error) {
 	// 获取模组文件夹下文件
 	fileList, e := os.ReadDir(modFolder)
 	if e != nil {
@@ -69,7 +82,7 @@ func NewModListFromFolder(modFolder string) ([]*ModFile, error) {
 	modList := make([]*ModFile, 0)
 	for _, file := range fileList {
 		if !file.IsDir() {
-			modFile, e := NewModFile(filepath.Join(modFolder, file.Name()))
+			modFile, e := NewModFile(filepath.Join(modFolder, file.Name()), modType)
 			if e != nil {
 				sclog.Error("读取模组文件：%s失败！原因：%s\n", file.Name(), e.Error())
 				continue

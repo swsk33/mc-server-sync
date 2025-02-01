@@ -12,6 +12,10 @@ sync:
   fetch-concurrency: 2
   # 软删除
   soft-remove: true
+  # 是否同步服务端提供的客户端辅助类型模组
+  fetch-client-mods: false
+  # 忽略同步的模组文件名列表
+  # 对于忽略同步的模组，不会被视为多余模组而被删除
   ignore-file-names:
     - "example-mod.jar"
 # 退出延迟，同步完成后延迟多少秒退出，若设为0则同步完成立即退出

@@ -31,7 +31,7 @@
 		"#1": {
 			"0000": {
 				"fixed": {
-					"file_version": "1.0.1.0"
+					"file_version": "1.1.0.0"
 				},
 				"info": {
 					"2052": {
@@ -40,7 +40,7 @@
 						"LegalCopyright": "swsk33 © 2025",
 						"OriginalFilename": "mc-sync-server.exe",
 						"ProductName": "Minecraft模组同步-服务端",
-						"ProductVersion": "1.0.1.0"
+						"ProductVersion": "1.1.0.0"
 					}
 				}
 			}

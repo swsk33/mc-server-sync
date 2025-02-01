@@ -4,6 +4,10 @@ base:
   mod-folder: "mods"
 # 服务器端口
 port: 25566
+# 客户端辅助类型模组（例如小地图、高清修复等）存放文件夹
+# 配置一个单独的存放仅客户端模组文件的文件夹，这类模组不安装在服务端，但客户端能够同步
+client-mods-folder: "client-mods"
 # 守护进程模式运行时的配置
 daemon:
+  # 守护进程模式下日志位置
   log-file: "mc-sync-server.log"

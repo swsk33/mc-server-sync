@@ -20,6 +20,8 @@ type ServerConfig struct {
 	Base BaseConfig `mapstructure:"base"`
 	// 服务端口
 	Port int `mapstructure:"port" default:"25566"`
+	// 仅客户端辅助类型模组存放目录
+	ClientModFolder string `mapstructure:"client-mods-folder" default:"client-mods"`
 	// 守护进程模式运行时的配置
 	Daemon struct {
 		// 日志文件
@@ -45,6 +47,8 @@ type ClientConfig struct {
 		// 软删除
 		// 若开启软删除，则在同步时删除本地模组文件时，不会实际对文件进行删除，而是移动到程序所在目录的mod-backup文件夹
 		SoftRemove bool `mapstructure:"soft-remove" default:"true"`
+		// 是否同步服务端配置的客户端辅助类型模组
+		FetchClientMods bool `mapstructure:"fetch-client-mods" default:"false"`
 		// 忽略同步的模组文件名列表
 		// 默认情况下，若本地存在但服务器不存在的模组会被删除
 		// 若某文件被加入到了忽略列表，则即使服务器不存在该文件也不会被删除

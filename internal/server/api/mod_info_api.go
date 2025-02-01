@@ -12,16 +12,30 @@ import (
 // ModInfoApi 用于获取模组文件信息的API对象
 type ModInfoApi struct{}
 
-// List 列出全部模组文件信息
-func (api *ModInfoApi) List(context *gin.Context) {
+// ListBoth 列出全部双端模组文件信息
+// 该API用于获取安装在Minecraft服务端的模组，这些模组通常服务端和客户端都需要安装
+func (api *ModInfoApi) ListBoth(context *gin.Context) {
 	// 获取模组文件夹下模组列表
-	modList, e := model.NewModListFromFolder(global.TotalConfig.Base.ModFolder)
+	modList, e := model.NewModListFromFolder(global.TotalConfig.Base.ModFolder, model.ModTypeBoth)
 	if e != nil {
 		context.JSON(http.StatusOK, model.CreateFailedResult(fmt.Sprintf("读取模组文件夹失败！%s", e.Error())))
 		return
 	}
 	// 返回
 	context.JSON(http.StatusOK, model.CreateSuccessResult("获取模组文件列表成功！", modList))
+}
+
+// ListClient 列出全部客户端类型模组文件信息
+// 该API用于获取单独配置提供的仅客户端模组
+func (api *ModInfoApi) ListClient(context *gin.Context) {
+	// 获取模组文件夹下模组列表
+	modList, e := model.NewModListFromFolder(global.TotalConfig.ClientModFolder, model.ModTypeClient)
+	if e != nil {
+		context.JSON(http.StatusOK, model.CreateFailedResult(fmt.Sprintf("读取客户端模组文件夹失败！%s", e.Error())))
+		return
+	}
+	// 返回
+	context.JSON(http.StatusOK, model.CreateSuccessResult("获取客户端模组文件列表成功！", modList))
 }
 
 // API对象单例

@@ -17,12 +17,13 @@ func InitGinRouterAndRun() error {
 	fetchApi := api.GetFetchApiInstance()
 	fetchGroup := router.Group("/api/fetch")
 	{
-		fetchGroup.GET("/get/:name", fetchApi.GetFileByName)
+		fetchGroup.GET("/get/:type/:name", fetchApi.GetFileByName)
 	}
 	modInfoApi := api.GetModListApiInstance()
 	modInfoGroup := router.Group("/api/mod-info")
 	{
-		modInfoGroup.GET("/get-all", modInfoApi.List)
+		modInfoGroup.GET("/get-all-both", modInfoApi.ListBoth)
+		modInfoGroup.GET("/get-all-client", modInfoApi.ListClient)
 	}
 	statusApi := api.GetStatusApiInstance()
 	statusGroup := router.Group("/api/status")
