@@ -9,6 +9,7 @@ target/
 *.syso
 /dockerfile/mc-sync-server
 /dockerfile/server-config.yaml
+/dockerfile/Dockerfile
 
 # draw.io
 .$*.bkp
