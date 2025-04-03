@@ -54,7 +54,10 @@ set image_name swsk33/minecraft-server-with-sync:$minecraft_version-$mod_loader_
 cd ./dockerfile
 echo 已切换工作目录到：(pwd)
 echo 正在构建Docker镜像...
-docker build -f ./Dockerfile -t $image_name --network host --build-arg ALL_PROXY="http://127.0.0.1:7500" .
+docker build -f ./Dockerfile -t $image_name \
+    --network host \
+    --build-arg JAVA_OPTS="-Dhttp.proxyHost=127.0.0.1 -Dhttp.proxyPort=7500 -Dhttps.proxyHost=127.0.0.1 -Dhttps.proxyPort=7500" \
+    .
 echo 构建完成！
 
 # 清理文件

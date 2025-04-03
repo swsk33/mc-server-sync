@@ -17,7 +17,7 @@ set fabric_installer_version $argv[3]
 function printHelp
     echo
     echo 用法：
-    echo "./generate-dockerfile.fish <Minecraft版本号> <Fabric Loader版本号> <Fabric Installer版本号>"
+    echo "./generate-dockerfile-fabric.fish <Minecraft版本号> <Fabric Loader版本号> <Fabric Installer版本号>"
 end
 
 if test -z $minecraft_version
@@ -52,10 +52,12 @@ ADD server-config.yaml /minecraft/data/
 # 加入启动脚本和其它数据文件
 ADD start.sh /
 ADD timezone.tar /usr/share/zoneinfo/
+# 用于构建时使用--build-arg传递Java运行属性
+ARG JAVA_OPTS
 # 初始化
 RUN chmod +x /start.sh \\
 	&& chmod +x /minecraft/mc-sync-server \\
-	&& java -jar /minecraft/fabric-server.jar --initSettings \\
+	&& java \$JAVA_OPTS -jar /minecraft/fabric-server.jar --initSettings \\
 	&& rm -r /minecraft/data/logs/
 # 端口
 EXPOSE 25565
